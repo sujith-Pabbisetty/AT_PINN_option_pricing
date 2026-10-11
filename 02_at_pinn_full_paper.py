@@ -378,6 +378,11 @@ def truth_fn(spec):
 RESULTS = {}
 spec_eu = Spec("european_put", CFG["K"], CFG["SIGMA"], CFG["R"], CFG["T"])
 m1_eu, ens_eu, h1_eu, h2_eu, tm_eu = run_at_pinn(spec_eu, tag="EU-put")
+# ── checkpoint: save immediately after training ───────────────────────────────
+torch.save([m.state_dict() for m in ens_eu], "results/pinn_european_ensemble.pt")
+torch.save(m1_eu.state_dict(),               "results/pinn_european_stage1.pt")
+print("[checkpoint] European models saved to results/")
+# ─────────────────────────────────────────────────────────────────────────────
 
 S_grid = np.linspace(30.0, 60.0, 121)
 truth = truth_fn(spec_eu)(S_grid, 0.0)
@@ -402,6 +407,11 @@ plt.tight_layout(); plt.savefig("results/fig2_european.png", dpi=150); plt.show(
 
 spec_am = Spec("american_put", CFG["K"], CFG["SIGMA"], CFG["R"], CFG["T"])
 m1_am, ens_am, h1_am, h2_am, tm_am = run_at_pinn(spec_am, tag="AM-put")
+# ── checkpoint: save immediately after training ───────────────────────────────
+torch.save([m.state_dict() for m in ens_am], "results/pinn_american_ensemble.pt")
+torch.save(m1_am.state_dict(),               "results/pinn_american_stage1.pt")
+print("[checkpoint] American models saved to results/")
+# ─────────────────────────────────────────────────────────────────────────────
 truth_am = truth_fn(spec_am)
 S_grid_am = np.linspace(38.0, 65.0, 109)
 slices = [(0.0, "t = 0"), (spec_am.T / 2, "t = T/2"), (spec_am.T, "t = T")]
@@ -649,6 +659,20 @@ plt.tight_layout(); plt.savefig("results/fig4_comparison.png", dpi=150); plt.sho
 
 RESULTS["data_source"] = DATA_SOURCE; RESULTS["mode"] = MODE; RESULTS["cfg"] = {k: (v if not isinstance(v, tuple) else list(v)) for k, v in CFG.items()}
 with open("results/summary.json", "w") as f: json.dump(RESULTS, f, indent=1, default=float)
+# ── final model save (consolidates all trained objects) ───────────────────────
+for _obj, _path, _label in [
+    (ens_eu, "results/pinn_european_ensemble.pt", "ens_eu"),
+    (ens_am, "results/pinn_american_ensemble.pt", "ens_am"),
+    (m1_eu,  "results/pinn_european_stage1.pt",   "m1_eu"),
+    (m1_am,  "results/pinn_american_stage1.pt",   "m1_am"),
+]:
+    try:
+        _sd = [m.state_dict() for m in _obj] if isinstance(_obj, list) else _obj.state_dict()
+        torch.save(_sd, _path)
+        print(f"[save] {_label} -> {_path}")
+    except Exception as _e:
+        print(f"[save] WARN could not save {_label}: {_e}")
+# ─────────────────────────────────────────────────────────────────────────────
 print("MODE:", MODE, "| baseline data:", DATA_SOURCE)
 if MODE != "paper": print("!! Reduced-budget run: numbers are NOT directly comparable to the paper (50k/5k epochs, M=30).")
 if DATA_SOURCE != "yahoo": print("!! Baselines were trained on SYNTHETIC data — not a reproduction of the paper's baseline comparison.")

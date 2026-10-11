@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments and local tooling
+.venv/
+venv/
+.env
+.env.*
+.ipynb_checkpoints/
+
+# Local research artifacts / downloaded third-party material
+/paper.pdf
+/chatgpt_analysis
+/data/*.csv
+
+# Trained model weights are reproducible outputs and can be large
+/results/*.pt

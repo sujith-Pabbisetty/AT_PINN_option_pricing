@@ -1,4 +1,4 @@
-# PINN Option Pricing: AT-PINN Reproduction and Extensions
+# PINN Option Pricing:  AT-PINN Reproduction and Extensions
 
 This repository contains a research implementation of an anchored-ensemble
 Physics-Informed Neural Network (AT-PINN) for European and American option

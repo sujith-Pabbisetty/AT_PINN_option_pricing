@@ -14,6 +14,7 @@ venv/
 /paper.pdf
 /chatgpt_analysis
 /data/*.csv
+/ppt_content.md
 
 # Trained model weights are reproducible outputs and can be large
 /results/*.pt
